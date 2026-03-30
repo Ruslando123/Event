@@ -12,6 +12,14 @@ function getSecret(): string {
   throw new Error("STUDIO_SESSION_SECRET must be set (min 16 chars)");
 }
 
+/** В production без секрета вход не должен заканчиваться необработанной ошибкой. */
+export function studioSessionEnvMisconfiguredMessage(): string | null {
+  if (process.env.NODE_ENV === "development") return null;
+  const s = process.env.STUDIO_SESSION_SECRET;
+  if (s && s.length >= 16) return null;
+  return "Задайте STUDIO_SESSION_SECRET в Vercel (минимум 16 символов), затем Redeploy.";
+}
+
 function sign(payload: string): string {
   return createHmac("sha256", getSecret()).update(payload).digest("hex");
 }

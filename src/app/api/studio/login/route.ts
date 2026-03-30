@@ -5,6 +5,7 @@ import {
   STUDIO_SESSION_COOKIE,
   createStudioSessionToken,
   studioSessionCookieOptions,
+  studioSessionEnvMisconfiguredMessage,
 } from "@/lib/studio-session";
 import { rateLimitStudioLogin } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/ip";
@@ -17,6 +18,11 @@ export async function POST(request: Request) {
       { success: false, message: "Слишком много попыток" },
       { status: 429 },
     );
+  }
+
+  const sessionErr = studioSessionEnvMisconfiguredMessage();
+  if (sessionErr) {
+    return NextResponse.json({ success: false, message: sessionErr }, { status: 503 });
   }
 
   const hash = getStudioPasswordHashForCompare();
@@ -37,16 +43,31 @@ export async function POST(request: Request) {
   const ok = await bcrypt.compare(password, hash);
   if (!ok) {
     return NextResponse.json(
-      { success: false, message: "Неверный пароль" },
+      {
+        success: false,
+        message:
+          "Неверный пароль или значение STUDIO_PASSWORD_HASH на Vercel не совпадает с паролем. Сгенерируйте хеш: npm run studio:hash -- ваш_пароль и вставьте первую строку ($2b$10$...) без обратных слэшей.",
+      },
       { status: 401 },
     );
   }
 
-  const token = createStudioSessionToken();
-  const res = NextResponse.json({ success: true });
-  res.cookies.set(STUDIO_SESSION_COOKIE, token, {
-    ...studioSessionCookieOptions,
-    secure: process.env.NODE_ENV === "production",
-  });
-  return res;
+  try {
+    const token = createStudioSessionToken();
+    const res = NextResponse.json({ success: true });
+    res.cookies.set(STUDIO_SESSION_COOKIE, token, {
+      ...studioSessionCookieOptions,
+      secure: process.env.NODE_ENV === "production",
+    });
+    return res;
+  } catch (e) {
+    console.error("[api/studio/login] session", e);
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Ошибка создания сессии. Проверьте STUDIO_SESSION_SECRET на Vercel.",
+      },
+      { status: 503 },
+    );
+  }
 }
