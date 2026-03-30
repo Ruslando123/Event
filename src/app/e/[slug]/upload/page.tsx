@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PhotoUploader } from "@/components/PhotoUploader";
+import { Images } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -28,13 +29,28 @@ export default async function UploadPage({
           </div>
           <Link
             href={`/e/${encodeURIComponent(slug)}/gallery`}
-            className="min-h-[44px] min-w-[44px] shrink-0 rounded-lg px-2 py-2 text-sm font-medium text-neutral-700 underline-offset-4 hover:underline"
+            className="inline-flex min-h-[48px] shrink-0 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50"
           >
+            <Images className="h-4 w-4" aria-hidden />
             Галерея
           </Link>
         </div>
       </header>
       <PhotoUploader eventSlug={slug} />
+
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-10 pb-[max(16px,env(safe-area-inset-bottom))]">
+        <div className="mx-auto max-w-lg px-4">
+          <div className="pointer-events-auto rounded-2xl border border-neutral-200 bg-white/95 p-3 shadow-lg backdrop-blur">
+            <Link
+              href={`/e/${encodeURIComponent(slug)}/gallery`}
+              className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-4 text-base font-semibold text-white transition hover:bg-neutral-800"
+            >
+              <Images className="h-5 w-5" aria-hidden />
+              Перейти в галерею
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
