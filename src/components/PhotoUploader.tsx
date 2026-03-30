@@ -98,6 +98,7 @@ export function PhotoUploader({ eventSlug }: { eventSlug: string }) {
     setFinishedOk(false);
     setBusy(true);
     let anyOk = false;
+    const succeededIds = new Set<string>();
     try {
       for (const item of items) {
         setItems((prev) =>
@@ -167,6 +168,8 @@ export function PhotoUploader({ eventSlug }: { eventSlug: string }) {
             throw new Error(j.message ?? "Не удалось сохранить");
           }
           setProgressById((p) => ({ ...p, [item.id]: 100 }));
+          succeededIds.add(item.id);
+          if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
           anyOk = true;
         } catch (e) {
           const msg = e instanceof Error ? e.message : "Ошибка загрузки";
@@ -176,6 +179,15 @@ export function PhotoUploader({ eventSlug }: { eventSlug: string }) {
             ),
           );
         }
+      }
+      if (succeededIds.size > 0) {
+        // Убираем успешно отправленные фото из списка, чтобы их не отправили повторно
+        setItems((prev) => prev.filter((x) => !succeededIds.has(x.id)));
+        setProgressById((p) => {
+          const n = { ...p };
+          for (const id of Array.from(succeededIds)) delete n[id];
+          return n;
+        });
       }
       if (anyOk) {
         setFinishedOk(true);
