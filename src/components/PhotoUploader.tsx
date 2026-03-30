@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
 import { upload } from "@vercel/blob/client";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { ImagePlus, Loader2, Trash2, CheckCircle2 } from "lucide-react";
+import { ImagePlus, Loader2, Trash2, CheckCircle2, Images } from "lucide-react";
 import { MAX_FILES_PER_SESSION, MAX_FILE_BYTES } from "@/lib/constants";
 import {
   prepareImageForUpload,
@@ -21,6 +22,7 @@ type Item = {
 };
 
 export function PhotoUploader({ eventSlug }: { eventSlug: string }) {
+  const galleryHref = `/e/${encodeURIComponent(eventSlug)}/gallery`;
   const [items, setItems] = useState<Item[]>([]);
   const [progressById, setProgressById] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState(false);
@@ -227,8 +229,13 @@ export function PhotoUploader({ eventSlug }: { eventSlug: string }) {
 
   const hasErrors = items.some((x) => x.error);
 
+  const gateBlocked =
+    items.length === 0 ||
+    (Boolean(turnstileSiteKey) && !turnstileToken);
+
   return (
-    <div className="mx-auto w-full max-w-lg px-4 pb-10 pt-6">
+    <>
+    <div className="mx-auto w-full max-w-lg px-4 pt-6 pb-[max(11rem,calc(9rem+env(safe-area-inset-bottom)))]">
       <label className="block">
         <input
           type="file"
@@ -316,13 +323,13 @@ export function PhotoUploader({ eventSlug }: { eventSlug: string }) {
 
       {items.length > 0 && !busy ? (
         <div className="mt-8 flex flex-col gap-3">
-          <button
-            type="button"
-            onClick={startUpload}
+          <Link
+            href={galleryHref}
             className="flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl border border-neutral-300 bg-white text-base font-semibold text-neutral-900 transition hover:bg-neutral-50"
           >
-            Отправить в галерею
-          </button>
+            <Images className="h-5 w-5 shrink-0" aria-hidden />
+            Перейти в галерею
+          </Link>
           {finishedOk || hasErrors ? (
             <button
               type="button"
@@ -350,5 +357,37 @@ export function PhotoUploader({ eventSlug }: { eventSlug: string }) {
         </p>
       ) : null}
     </div>
+
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-10 pb-[max(16px,env(safe-area-inset-bottom))]">
+        <div className="mx-auto max-w-lg px-4">
+          <div className="pointer-events-auto rounded-2xl border border-neutral-200 bg-white/95 p-3 shadow-lg backdrop-blur">
+            <button
+              type="button"
+              onClick={() => void startUpload()}
+              disabled={gateBlocked}
+              className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-4 text-base font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {busy ? (
+                <>
+                  <Loader2 className="h-5 w-5 shrink-0 animate-spin" aria-hidden />
+                  Загрузка…
+                </>
+              ) : (
+                <>
+                  <ImagePlus className="h-5 w-5 shrink-0" aria-hidden />
+                  Отправить в галерею
+                </>
+              )}
+            </button>
+            <Link
+              href={galleryHref}
+              className="mt-2 flex min-h-[44px] items-center justify-center rounded-xl text-sm font-semibold text-neutral-700 underline-offset-2 hover:underline"
+            >
+              Перейти в галерею
+            </Link>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

@@ -83,19 +83,21 @@ export function EventGallery({
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-28 pt-6">
-      <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">{eventTitle}</h1>
+      <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex w-full flex-row items-start justify-between gap-3 sm:w-auto sm:flex-col sm:justify-start sm:gap-1">
+          <h1 className="min-w-0 flex-1 pr-1 text-2xl font-semibold leading-tight text-neutral-900 sm:flex-none sm:pr-0">
+            {eventTitle}
+          </h1>
           <Link
             href={`/e/${encodeURIComponent(eventSlug)}/upload`}
-            className="mt-1 inline-block text-sm font-medium text-neutral-600 underline-offset-2 hover:underline"
+            className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white shadow-md ring-1 ring-black/10 transition hover:bg-neutral-800 active:scale-[0.98] sm:mt-1 sm:inline-block sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 sm:font-medium sm:text-neutral-600 sm:shadow-none sm:ring-0 sm:underline-offset-2 sm:hover:bg-transparent sm:hover:underline sm:active:scale-100"
           >
             Загрузить фото
           </Link>
         </div>
         <a
           href={`/api/events/${encodeURIComponent(eventSlug)}/download-zip`}
-          className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50"
+          className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50 sm:w-auto sm:shrink-0"
         >
           <Download className="h-4 w-4" aria-hidden />
           Скачать всё (ZIP)
