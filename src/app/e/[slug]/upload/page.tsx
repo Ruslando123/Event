@@ -16,7 +16,7 @@ export default async function UploadPage({
   if (!event) notFound();
 
   return (
-    <div className="min-h-dvh">
+    <div className="min-h-dvh pb-[max(11rem,calc(9rem+env(safe-area-inset-bottom)))]">
       <header className="border-b border-neutral-100 px-4 py-4">
         <div className="mx-auto flex max-w-lg items-start justify-between gap-4">
           <div>
